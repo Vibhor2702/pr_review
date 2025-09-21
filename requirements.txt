@@ -1,0 +1,8 @@
+requests
+gitpython
+openai
+scikit-learn
+numpy
+pandas
+rich
+flask
