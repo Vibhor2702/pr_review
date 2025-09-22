@@ -1,6 +1,7 @@
 """Flask HTTP server for the PR review agent."""
 
 import logging
+import os
 from typing import Dict, Any
 
 from flask import Flask, request, jsonify
@@ -22,6 +23,10 @@ logger = logging.getLogger(__name__)
 def create_app() -> Flask:
     """Create and configure Flask application."""
     app = Flask(__name__)
+    
+    # Enable CORS for all routes
+    from flask_cors import CORS
+    CORS(app, origins=["http://localhost:3002", "https://*.vercel.app", "https://*.netlify.app"])
     
     # Setup logging
     setup_logging()
@@ -161,6 +166,98 @@ def create_app() -> Flask:
             "llm_configured": config.gemini_api_key is not None
         })
     
+    @app.route("/demo/review", methods=["POST"])
+    def demo_review():
+        """Demo review endpoint with mock data."""
+        try:
+            data = request.get_json()
+            if not data:
+                raise BadRequest("JSON body required")
+            
+            provider = data.get("provider", "github")
+            owner = data.get("owner", "example")
+            repo = data.get("repo", "demo")
+            pr_number = data.get("pr_number", 1)
+            
+            # Simulate processing time
+            import time
+            time.sleep(1)
+            
+            # Return realistic demo data
+            demo_response = {
+                "status": "success",
+                "pr_context": {
+                    "provider": provider,
+                    "owner": owner,
+                    "repo": repo,
+                    "pr_number": pr_number,
+                    "title": "feat: Add new authentication system",
+                    "files_changed": 8,
+                    "head_ref": "feature/auth-system",
+                    "base_ref": "main"
+                },
+                "review": {
+                    "score": 85,
+                    "grade": "B+",
+                    "total_findings": 12,
+                    "summary": "Good overall code quality with some areas for improvement. The authentication implementation is solid but could benefit from additional error handling and test coverage.",
+                    "comments": [
+                        {
+                            "file": "src/auth/authentication.py",
+                            "line": 42,
+                            "side": "right",
+                            "message": "Consider adding input validation for email format",
+                            "suggestion": "Use a proper email validation library like email-validator",
+                            "severity": "warning",
+                            "rule": "input-validation",
+                            "confidence": 0.8
+                        },
+                        {
+                            "file": "src/models/user.py",
+                            "line": 15,
+                            "side": "right",
+                            "message": "Missing docstring for User class",
+                            "suggestion": "Add comprehensive docstring explaining the User model",
+                            "severity": "info",
+                            "rule": "documentation",
+                            "confidence": 0.9
+                        },
+                        {
+                            "file": "src/auth/password.py",
+                            "line": 28,
+                            "side": "right",
+                            "message": "Password hashing could be more secure",
+                            "suggestion": "Consider using bcrypt with higher cost factor",
+                            "severity": "warning",
+                            "rule": "security",
+                            "confidence": 0.85
+                        }
+                    ]
+                },
+                "metadata": {
+                    "total_findings": 12,
+                    "severity_breakdown": {
+                        "error": 1,
+                        "warning": 7,
+                        "info": 4
+                    },
+                    "timestamp": "2025-09-22T13:52:00Z"
+                },
+                "artifact_path": "/tmp/demo_review_artifacts"
+            }
+            
+            return jsonify(demo_response)
+            
+        except BadRequest as e:
+            logger.error(f"Bad request: {e}")
+            return jsonify({"error": str(e)}), 400
+        except Exception as e:
+            logger.error(f"Demo review failed: {e}", exc_info=True)
+            return jsonify({
+                "error": "Internal server error",
+                "message": str(e)
+            }), 500
+
     @app.route("/config", methods=["GET"])
     def get_config():
         """Get current configuration (without sensitive data)."""
@@ -195,7 +292,8 @@ def create_app() -> Flask:
 def main():
     """Run the server directly."""
     app = create_app()
-    app.run(host=config.server_host, port=config.server_port, debug=True)
+    port = int(os.environ.get("PORT", config.server_port))
+    app.run(host="0.0.0.0", port=port, debug=False)
 
 
 if __name__ == "__main__":
