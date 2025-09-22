@@ -1,0 +1,142 @@
+{
+  "pr_context": {
+    "provider": "github",
+    "owner": "microsoft",
+    "repo": "vscode",
+    "pr_number": 123,
+    "head_ref": "feature/syntax-highlighting",
+    "base_ref": "main",
+    "head_sha": "abc123",
+    "base_sha": "def456", 
+    "diff_url": "https://github.com/microsoft/vscode/pull/123.diff",
+    "repo_url": "https://github.com/microsoft/vscode.git",
+    "title": "Fix syntax highlighting for Python f-strings",
+    "body": "This PR fixes a bug where Python f-strings were not properly highlighted in certain edge cases.",
+    "files": [
+      {
+        "path": "src/vs/editor/contrib/tokenization/tokenization.ts",
+        "additions": 25,
+        "deletions": 8,
+        "status": "modified"
+      },
+      {
+        "path": "src/vs/editor/test/tokenization.test.ts", 
+        "additions": 45,
+        "deletions": 0,
+        "status": "added"
+      }
+    ]
+  },
+  "review": {
+    "comments": [
+      {
+        "file": "src/vs/editor/contrib/tokenization/tokenization.ts",
+        "line": 142,
+        "side": "right",
+        "message": "Consider extracting this complex regex pattern into a named constant for better readability",
+        "suggestion": "const F_STRING_PATTERN = /f[\"'](?:[^\"'\\\\]|\\\\.)*[\"']/g;",
+        "severity": "info",
+        "tool": "llm",
+        "confidence": 0.85,
+        "reasoning": "Complex regex patterns are hard to understand and maintain"
+      },
+      {
+        "file": "src/vs/editor/contrib/tokenization/tokenization.ts", 
+        "line": 156,
+        "side": "right",
+        "message": "Function has high cyclomatic complexity (12). Consider breaking into smaller functions.",
+        "severity": "warning",
+        "tool": "complexity",
+        "code": "COMPLEXITY_12",
+        "rule": "RADON_CC_12"
+      },
+      {
+        "file": "src/vs/editor/contrib/tokenization/tokenization.ts",
+        "line": 178,
+        "side": "right", 
+        "message": "Line too long (92 > 88 characters)",
+        "severity": "warning",
+        "tool": "style",
+        "code": "E501",
+        "rule": "E501"
+      },
+      {
+        "file": "src/vs/editor/test/tokenization.test.ts",
+        "line": 23,
+        "side": "right",
+        "message": "Good test coverage for edge cases. Consider adding a test for nested f-strings.",
+        "suggestion": "Add test case: `f\"outer {f'inner {var}'}\"` ",
+        "severity": "info",
+        "tool": "llm",
+        "confidence": 0.75,
+        "reasoning": "Comprehensive testing helps prevent regressions"
+      }
+    ],
+    "summary": "ℹ️ Found 4 suggestions\\n\\nBreakdown: 2 warnings, 2 suggestions\\nSources: llm: 2, complexity: 1, style: 1\\n\\nConsider addressing the warnings for better code quality.",
+    "metadata": {
+      "total_findings": 4,
+      "severity_breakdown": {
+        "error": 0,
+        "warning": 2, 
+        "info": 2
+      },
+      "tool_breakdown": {
+        "llm": 2,
+        "complexity": 1,
+        "style": 1
+      },
+      "file_breakdown": {
+        "src/vs/editor/contrib/tokenization/tokenization.ts": 3,
+        "src/vs/editor/test/tokenization.test.ts": 1
+      },
+      "most_problematic_files": [
+        {
+          "file": "src/vs/editor/contrib/tokenization/tokenization.ts",
+          "issues": 3
+        },
+        {
+          "file": "src/vs/editor/test/tokenization.test.ts", 
+          "issues": 1
+        }
+      ],
+      "avg_llm_confidence": 0.8,
+      "timestamp": "2023-12-20T10:30:45.123Z",
+      "pr_info": {
+        "provider": "github",
+        "pr_number": 123,
+        "files_changed": 2
+      }
+    },
+    "score": {
+      "score": 78.5,
+      "breakdown": {
+        "base_score": 100.0,
+        "style_penalty": 5.0,
+        "security_penalty": 0.0,
+        "complexity_penalty": 10.0,
+        "test_coverage_penalty": 0.0,
+        "size_penalty": 0.0,
+        "total_penalty": 15.0,
+        "final_score": 78.5
+      },
+      "grade": "B",
+      "recommendations": [
+        "📊 Consider refactoring complex code sections",
+        "✨ Address major style violations",
+        "👍 Good code quality with minor improvements needed"
+      ],
+      "metrics": {
+        "total_findings": 4,
+        "files_changed": 2,
+        "lines_added": 70,
+        "lines_removed": 8,
+        "net_lines": 62,
+        "error_count": 0,
+        "warning_count": 2,
+        "info_count": 2
+      }
+    }
+  },
+  "timestamp": "2023-12-20T10:30:45.123Z",
+  "version": "1.0"
+}

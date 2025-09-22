@@ -1,2 +1,22 @@
 venv/
+<<<<<<< HEAD
 test/
+=======
+.env
+__pycache__/
+.pytest_cache/
+.vscode/
+*.pyc
+.DS_Store
+*.egg-info/
+build/
+dist/
+.coverage
+htmlcov/
+.mypy_cache/
+.tox/
+.idea/
+temp_repo/
+artifacts/*.json
+!artifacts/example_review.json
+>>>>>>> d02564ec (one two three go ...)
