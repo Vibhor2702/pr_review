@@ -1,7 +1,4 @@
 venv/
-<<<<<<< HEAD
-test/
-=======
 .env
 __pycache__/
 .pytest_cache/
@@ -19,4 +16,7 @@ htmlcov/
 temp_repo/
 artifacts/*.json
 !artifacts/example_review.json
->>>>>>> d02564ec (one two three go ...)
+node_modules/
+frontend/node_modules/
+frontend/dist/
+*.log
