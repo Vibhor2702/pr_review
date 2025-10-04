@@ -123,6 +123,12 @@ export const reviewAPI = {
     return response.data
   },
 
+  // Demo review with mock data
+  demoReview: async (request: Partial<PRReviewRequest>): Promise<PRReviewResponse> => {
+    const response = await api.post('/demo/review', request)
+    return response.data
+  },
+
   // Get health status
   getHealth: async (): Promise<HealthResponse> => {
     const response = await api.get('/health')

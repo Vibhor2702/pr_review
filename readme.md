@@ -1,6 +1,52 @@
 # PR Review Agent
 
+[![Frontend Live](https://img.shields.io/badge/Cloudflare-Pages-orange?style=for-the-badge&logo=cloudflare)](https://pr-review.pages.dev)
+[![Backend API](https://img.shields.io/badge/Railway-API-blue?style=for-the-badge&logo=railway)](https://pr-review-production.up.railway.app)
+[![Deploy Status](https://github.com/Vibhor2702/pr_review/actions/workflows/deploy.yml/badge.svg)](https://github.com/Vibhor2702/pr_review/actions)
+[![Python](https://img.shields.io/badge/Python-3.11-blue?style=flat-square&logo=python)](https://www.python.org/)
+[![React](https://img.shields.io/badge/React-18.2-61DAFB?style=flat-square&logo=react)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.2-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](LICENSE)
+
 A professional automated Pull Request Review Agent that analyzes code changes, provides comprehensive feedback, and generates quality scores for pull requests across GitHub, GitLab, and Bitbucket.
+
+## 🌐 Live Deployments
+
+- **Frontend (React Dashboard)**: [https://pr-review.pages.dev](https://pr-review.pages.dev) ⚡ Cloudflare Pages
+- **Backend (Serverless API)**: Cloudflare Workers - Deploy in 5 minutes! (See [QUICKSTART.md](QUICKSTART.md))
+- **Alternative Backend**: [Railway.app](https://pr-review-production.up.railway.app) 🚂 Flask API
+
+## 🆕 **NEW: Cloudflare Workers Backend (Serverless, Forever Free!)**
+
+Deploy a **serverless, globally distributed** backend that runs **forever for free** on Cloudflare Workers!
+
+### ⚡ Why Cloudflare Workers?
+
+- ✅ **Forever Free**: 100,000 requests/day (vs Railway's limited free tier)
+- ✅ **Global Edge Network**: 300+ locations worldwide
+- ✅ **Zero Maintenance**: No servers to manage, auto-scaling
+- ✅ **Instant Deploys**: Deploy in seconds with one command
+- ✅ **Google Gemini Integration**: AI-powered code reviews
+- ✅ **Perfect for Portfolio**: Professional serverless architecture
+
+### 🚀 5-Minute Deployment
+
+```bash
+# 1. Install and deploy backend
+cd workers
+npm install
+npx wrangler login
+npx wrangler secret put GEMINI_API_KEY
+npm run deploy
+
+# 2. Deploy frontend to Cloudflare Pages
+# See QUICKSTART.md for step-by-step guide
+```
+
+**📚 Complete Guides:**
+- **Quick Start**: [QUICKSTART.md](QUICKSTART.md) - Deploy in 5 minutes
+- **Complete Guide**: [CLOUDFLARE_COMPLETE_GUIDE.md](CLOUDFLARE_COMPLETE_GUIDE.md) - Full documentation
+- **Workers Details**: [workers/README.md](workers/README.md) - API reference
 
 ## ✨ Features
 
@@ -529,7 +575,72 @@ python -m src.main review --provider github --owner owner --repo repo --pr 123 -
 - `Repositories: Read`
 - `Pull requests: Write` (for comments)
 
-## 📄 License
+## � Deployment
+
+### Free Hosting Setup (No Credit Card Required)
+
+The application is deployed using:
+- **Backend**: [Railway.app](https://railway.app) (Free Tier)
+- **Frontend**: [Cloudflare Pages](https://pages.cloudflare.com) (Free Tier)
+
+**Quick Deploy:**
+
+1. **Backend (Railway)**
+   ```bash
+   # Fork this repository
+   # Connect to Railway: https://railway.app/new
+   # Add environment variable: GEMINI_API_KEY=your_key
+   # Railway auto-deploys from main branch
+   ```
+
+2. **Frontend (Cloudflare Pages)**
+   ```bash
+   # Connect to Cloudflare Pages: https://pages.cloudflare.com
+   # Build command: cd frontend && npm install && npm run build
+   # Output directory: frontend/dist
+   # Add environment variable: VITE_API_URL=https://your-railway-app.up.railway.app
+   ```
+
+**For detailed deployment instructions**, see [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
+
+### Deployment Architecture
+
+```
+GitHub (main branch)
+     │
+     ├─────────────────────┐
+     │                     │
+     ▼                     ▼
+Railway.app          Cloudflare Pages
+(Backend API)        (React Frontend)
+     │                     │
+     └──────── API ────────┘
+        (CORS Enabled)
+```
+
+### Environment Variables
+
+**Backend (Railway)**:
+```bash
+GEMINI_API_KEY=your_gemini_key
+PORT=8080  # Auto-set by Railway
+FLASK_ENV=production
+```
+
+**Frontend (Cloudflare Pages)**:
+```bash
+VITE_API_URL=https://pr-review-production.up.railway.app
+```
+
+### CI/CD Pipeline
+
+Automated deployment via GitHub Actions:
+- ✅ Tests run on every push
+- ✅ Auto-deploy to Railway (backend)
+- ✅ Auto-deploy to Cloudflare Pages (frontend)
+- ✅ Deployment status in README badges
+
+## �📄 License
 
 This project is licensed under the MIT License.
 

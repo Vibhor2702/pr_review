@@ -21,7 +21,7 @@ class Config:
         
         # Server configuration
         self.server_host: str = os.getenv("SERVER_HOST", "0.0.0.0")
-        self.server_port: int = int(os.getenv("SERVER_PORT", "5000"))
+        self.server_port: int = int(os.getenv("PORT", os.getenv("SERVER_PORT", "5000")))
         
         # LLM configuration (Gemini)
         self.llm_model: str = os.getenv("GEMINI_MODEL", "gemini-1.5-flash")
