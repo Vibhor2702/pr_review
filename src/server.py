@@ -26,10 +26,32 @@ def create_app() -> Flask:
     
     # Enable CORS for all routes
     from flask_cors import CORS
-    CORS(app, origins=["http://localhost:3002", "https://*.vercel.app", "https://*.netlify.app"])
+    CORS(app, origins=[
+        "http://localhost:3002",
+        "https://*.vercel.app",
+        "https://*.netlify.app",
+        "https://*.pages.dev",
+        "https://pr-review.pages.dev"
+    ])
     
     # Setup logging
     setup_logging()
+    
+    @app.route("/", methods=["GET"])
+    def root():
+        """Root endpoint - API information."""
+        return {
+            "name": "PR Review Agent API",
+            "version": "1.0.0",
+            "status": "running",
+            "endpoints": {
+                "health": "/health",
+                "config": "/config",
+                "review": "/review_pr",
+                "demo": "/demo"
+            },
+            "description": "Professional Pull Request Review API powered by Google Gemini AI"
+        }
     
     @app.route("/health", methods=["GET"])
     def health_check():

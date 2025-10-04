@@ -1,1 +1,1 @@
-web: gunicorn --bind 0.0.0.0:$PORT src.server:create_app()
+web: gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 'src.server:create_app()'
