@@ -11,4 +11,4 @@ cmds = [
 cmds = ['echo "Build complete"']
 
 [start]
-cmd = 'gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --access-logfile - --error-logfile - src.server:create_app()'
+cmd = 'gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --access-logfile - --error-logfile - main:app'

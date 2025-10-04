@@ -14,4 +14,4 @@ exec gunicorn \
   --access-logfile - \
   --error-logfile - \
   --log-level info \
-  "src.server:create_app()"
+  main:app
