@@ -12,11 +12,12 @@ A professional automated Pull Request Review Agent that analyzes code changes, p
 
 ## 🌐 Live Deployment
 
-Deploy on **Cloudflare** - completely free, forever!
+Your application is **LIVE** on Cloudflare - completely free, forever!
 
 - **Frontend**: [https://pr-review.pages.dev](https://pr-review.pages.dev) ⚡ Cloudflare Pages
-- **Backend**: Cloudflare Workers (Serverless API)
+- **Backend**: [https://pr-review-worker.kenshifan3000.workers.dev](https://pr-review-worker.kenshifan3000.workers.dev) ⚡ Cloudflare Workers
 - **Cost**: $0/month forever
+- **Status**: ✅ Both deployed and running
 
 ## 🚀 Quick Deploy (6 minutes)
 
