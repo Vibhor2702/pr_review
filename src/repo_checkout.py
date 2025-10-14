@@ -140,21 +140,44 @@ class RepoCheckout:
             return ""
     
     def cleanup(self, repo_path: Optional[str] = None):
-        """Clean up repository checkouts."""
+        """Clean up repository checkouts with Windows compatibility."""
         if repo_path:
             # Clean up specific repository
             if repo_path in self.active_repos:
                 try:
                     if Path(repo_path).exists():
-                        shutil.rmtree(repo_path)
+                        self._force_remove_readonly(repo_path)
                     del self.active_repos[repo_path]
                     logger.info(f"Cleaned up repository: {repo_path}")
                 except Exception as e:
                     logger.error(f"Failed to cleanup {repo_path}: {e}")
+                    # Don't fail the entire process due to cleanup issues
         else:
             # Clean up all repositories
             for path in list(self.active_repos.keys()):
                 self.cleanup(path)
+    
+    def _force_remove_readonly(self, path):
+        """Force remove directory with read-only files (Windows compatible)."""
+        import os
+        import stat
+        
+        def handle_remove_readonly(func, path, exc):
+            """Error handler for removing read-only files."""
+            if os.path.exists(path):
+                os.chmod(path, stat.S_IWRITE)
+                func(path)
+        
+        try:
+            shutil.rmtree(path, onerror=handle_remove_readonly)
+        except Exception as e:
+            logger.warning(f"Could not fully clean up {path}: {e}")
+            # Try alternative cleanup
+            try:
+                import subprocess
+                subprocess.run(['rmdir', '/s', '/q', str(path)], shell=True, capture_output=True)
+            except Exception:
+                pass  # Ignore if this also fails
     
     def _extract_repo_name(self, repo_url: str) -> str:
         """Extract repository name from URL."""

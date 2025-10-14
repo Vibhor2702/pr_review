@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -120,6 +120,12 @@ export const reviewAPI = {
   // Review a pull request
   reviewPR: async (request: PRReviewRequest): Promise<PRReviewResponse> => {
     const response = await api.post('/review_pr', request)
+    return response.data
+  },
+
+  // Demo review with mock data
+  demoReview: async (request: Partial<PRReviewRequest>): Promise<PRReviewResponse> => {
+    const response = await api.post('/demo/review', request)
     return response.data
   },
 
