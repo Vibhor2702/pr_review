@@ -33,7 +33,8 @@ export function NewReviewModal({ isOpen, onClose, onSubmit, backendStatus }: New
         )
         
         if (!ghResponse.ok) {
-          throw new Error(`Failed to fetch PR: ${ghResponse.statusText}`)
+          const errorData = await ghResponse.json().catch(() => ({}))
+          throw new Error(`Failed to fetch PR (${ghResponse.status}): ${errorData.message || ghResponse.statusText}. Check if the PR exists and is accessible.`)
         }
         
         const prData = await ghResponse.json()
