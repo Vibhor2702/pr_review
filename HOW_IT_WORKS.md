@@ -18,8 +18,8 @@ User Input → GitHub API → Cloudflare Workers → Gemini AI → Frontend Disp
 
 ### ✅ Development (Local)
 - **Location**: `workers/.dev.vars` (gitignored)
-- **Key**: `GEMINI_API_KEY=AIzaSyAi9gBbbfZDRqQdUxV4sOFhSd3fphT8Hig`
-- **Usage**: Automatically loaded when running `npm run dev`
+- **Key**: Get your own key from https://aistudio.google.com/app/apikey
+- **Usage**: Add to `.dev.vars` file, automatically loaded when running `npm run dev`
 
 ### 🚀 Production (Cloudflare)
 When you deploy to production:
@@ -107,7 +107,7 @@ Transformed response shows:
 ### ❌ What We Removed
 `.env.example` had **real keys** that would be committed to GitHub:
 ```bash
-GEMINI_API_KEY=AIzaSyAi9gBbbfZDRqQdUxV4sOFhSd3fphT8Hig  # EXPOSED!
+GEMINI_API_KEY=your_actual_key_here  # Never commit real keys!
 ```
 
 ### ✅ What We Fixed
