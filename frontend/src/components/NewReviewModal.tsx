@@ -26,66 +26,96 @@ export function NewReviewModal({ isOpen, onClose, onSubmit, backendStatus }: New
     if (formData.owner && formData.repo && formData.prNumber) {
       setIsSubmitting(true)
       try {
-        // For demo purposes, create a realistic mock response
-        const mockResult = {
+        // Fetch real PR data from GitHub API
+        const prNumber = parseInt(formData.prNumber)
+        const ghResponse = await fetch(
+          `https://api.github.com/repos/${formData.owner}/${formData.repo}/pulls/${prNumber}`
+        )
+        
+        if (!ghResponse.ok) {
+          throw new Error(`Failed to fetch PR: ${ghResponse.statusText}`)
+        }
+        
+        const prData = await ghResponse.json()
+        
+        // Fetch PR diff
+        const diffResponse = await fetch(prData.diff_url)
+        if (!diffResponse.ok) {
+          throw new Error(`Failed to fetch PR diff: ${diffResponse.statusText}`)
+        }
+        
+        const diffText = await diffResponse.text()
+        
+        // Get API URL from environment
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8787'
+        
+        // Call real Cloudflare Workers API for AI review
+        const reviewResponse = await fetch(`${apiUrl}/api/review`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            diff: diffText,
+            repo: `${formData.owner}/${formData.repo}`,
+            author: prData.user.login,
+            pr_number: prNumber,
+            title: prData.title,
+            description: prData.body
+          })
+        })
+        
+        if (!reviewResponse.ok) {
+          throw new Error(`Review API failed: ${reviewResponse.statusText}`)
+        }
+        
+        const reviewData = await reviewResponse.json()
+        
+        // Transform to UI format
+        const result = {
           status: 'success',
           pr_context: {
             provider: formData.provider,
             owner: formData.owner,
             repo: formData.repo,
-            pr_number: parseInt(formData.prNumber),
-            title: `Demo PR: Add new authentication feature`,
-            files_changed: 5,
-            head_ref: 'feature/auth',
-            base_ref: 'main'
+            pr_number: prNumber,
+            title: prData.title,
+            files_changed: prData.changed_files,
+            head_ref: prData.head.ref,
+            base_ref: prData.base.ref
           },
           review: {
-            score: 85,
-            grade: 'B+',
-            total_findings: 8,
-            summary: `Excellent work on the ${formData.owner}/${formData.repo} PR #${formData.prNumber}! The code quality is solid with room for minor improvements. The implementation follows best practices and shows good attention to security.`,
-            comments: [
-              {
-                file: 'src/auth.js',
-                line: 42,
-                side: 'right',
-                message: 'Consider adding input validation for email format',
-                suggestion: 'Use a proper email validation library',
-                severity: 'warning',
-                rule: 'input-validation',
-                confidence: 0.8
-              },
-              {
-                file: 'src/user.js', 
-                line: 15,
-                side: 'right',
-                message: 'Missing documentation for this function',
-                suggestion: 'Add JSDoc comments',
-                severity: 'info',
-                rule: 'documentation',
-                confidence: 0.9
-              }
-            ]
+            score: reviewData.score,
+            grade: reviewData.grade,
+            total_findings: reviewData.suggestions.length + 
+              (reviewData.severity_breakdown.critical + reviewData.severity_breakdown.high + 
+               reviewData.severity_breakdown.medium + reviewData.severity_breakdown.low),
+            summary: reviewData.summary,
+            comments: reviewData.suggestions.map((suggestion: string, idx: number) => ({
+              file: 'various',
+              line: idx + 1,
+              side: 'right',
+              message: suggestion,
+              suggestion: suggestion,
+              severity: 'info',
+              rule: 'code-quality',
+              confidence: 0.85
+            }))
           },
           metadata: {
-            total_findings: 8,
+            total_findings: reviewData.suggestions.length,
             severity_breakdown: {
-              error: 0,
-              warning: 3,
-              info: 5
+              error: reviewData.severity_breakdown.critical,
+              warning: reviewData.severity_breakdown.high + reviewData.severity_breakdown.medium,
+              info: reviewData.severity_breakdown.low
             },
-            timestamp: new Date().toISOString()
+            timestamp: reviewData.metadata.timestamp
           },
-          artifact_path: '/tmp/demo_review'
+          artifact_path: null
         }
         
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 2000))
-        
-        setResult(mockResult)
+        setResult(result)
         onSubmit({
           ...formData,
-          prNumber: parseInt(formData.prNumber)
+          prNumber
         })
       } catch (error) {
         console.error('Review failed:', error)
