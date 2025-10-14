@@ -1,8 +1,8 @@
 # PR Review Agent
 
 [![Frontend Live](https://img.shields.io/badge/Cloudflare-Pages-orange?style=for-the-badge&logo=cloudflare)](https://pr-review.pages.dev)
-[![Backend API](https://img.shields.io/badge/Railway-API-blue?style=for-the-badge&logo=railway)](https://pr-review-production.up.railway.app)
-[![Deploy Status](https://github.com/Vibhor2702/pr_review/actions/workflows/deploy.yml/badge.svg)](https://github.com/Vibhor2702/pr_review/actions)
+[![Backend API](https://img.shields.io/badge/Cloudflare-Workers-orange?style=for-the-badge&logo=cloudflare)](https://pr-review.pages.dev)
+[![Cost](https://img.shields.io/badge/Cost-$0%2Fmonth-success?style=for-the-badge)](DEPLOY.md)
 [![Python](https://img.shields.io/badge/Python-3.11-blue?style=flat-square&logo=python)](https://www.python.org/)
 [![React](https://img.shields.io/badge/React-18.2-61DAFB?style=flat-square&logo=react)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.2-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
@@ -10,43 +10,37 @@
 
 A professional automated Pull Request Review Agent that analyzes code changes, provides comprehensive feedback, and generates quality scores for pull requests across GitHub, GitLab, and Bitbucket.
 
-## 🌐 Live Deployments
+## 🌐 Live Deployment
 
-- **Frontend (React Dashboard)**: [https://pr-review.pages.dev](https://pr-review.pages.dev) ⚡ Cloudflare Pages
-- **Backend (Serverless API)**: Cloudflare Workers - Deploy in 5 minutes! (See [QUICKSTART.md](QUICKSTART.md))
-- **Alternative Backend**: [Railway.app](https://pr-review-production.up.railway.app) 🚂 Flask API
+Deploy on **Cloudflare** - completely free, forever!
 
-## 🆕 **NEW: Cloudflare Workers Backend (Serverless, Forever Free!)**
+- **Frontend**: [https://pr-review.pages.dev](https://pr-review.pages.dev) ⚡ Cloudflare Pages
+- **Backend**: Cloudflare Workers (Serverless API)
+- **Cost**: $0/month forever
 
-Deploy a **serverless, globally distributed** backend that runs **forever for free** on Cloudflare Workers!
-
-### ⚡ Why Cloudflare Workers?
-
-- ✅ **Forever Free**: 100,000 requests/day (vs Railway's limited free tier)
-- ✅ **Global Edge Network**: 300+ locations worldwide
-- ✅ **Zero Maintenance**: No servers to manage, auto-scaling
-- ✅ **Instant Deploys**: Deploy in seconds with one command
-- ✅ **Google Gemini Integration**: AI-powered code reviews
-- ✅ **Perfect for Portfolio**: Professional serverless architecture
-
-### 🚀 5-Minute Deployment
+## 🚀 Quick Deploy (6 minutes)
 
 ```bash
-# 1. Install and deploy backend
+# 1. Deploy backend
 cd workers
 npm install
 npx wrangler login
 npx wrangler secret put GEMINI_API_KEY
 npm run deploy
 
-# 2. Deploy frontend to Cloudflare Pages
-# See QUICKSTART.md for step-by-step guide
+# 2. Deploy frontend (via Cloudflare Dashboard)
+# See DEPLOY.md for complete guide
 ```
 
-**📚 Complete Guides:**
-- **Quick Start**: [QUICKSTART.md](QUICKSTART.md) - Deploy in 5 minutes
-- **Complete Guide**: [CLOUDFLARE_COMPLETE_GUIDE.md](CLOUDFLARE_COMPLETE_GUIDE.md) - Full documentation
-- **Workers Details**: [workers/README.md](workers/README.md) - API reference
+**📚 Full Guide**: [DEPLOY.md](DEPLOY.md) - Complete step-by-step deployment
+
+### ⚡ Why Cloudflare?
+
+- ✅ **Forever Free**: 100,000 requests/day
+- ✅ **Global Edge Network**: 300+ locations worldwide
+- ✅ **Zero Maintenance**: No servers to manage
+- ✅ **Auto-Scaling**: Handles any traffic
+- ✅ **Fast**: < 50ms response time globally
 
 ## ✨ Features
 

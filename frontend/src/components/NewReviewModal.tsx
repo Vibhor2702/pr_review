@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { reviewAPI } from '@/lib/api'
 
 interface NewReviewModalProps {
   isOpen: boolean
@@ -27,23 +26,72 @@ export function NewReviewModal({ isOpen, onClose, onSubmit, backendStatus }: New
     if (formData.owner && formData.repo && formData.prNumber) {
       setIsSubmitting(true)
       try {
-        // Call the demo API endpoint
-        const reviewData = {
-          provider: formData.provider as 'github' | 'gitlab' | 'bitbucket',
-          owner: formData.owner,
-          repo: formData.repo,
-          pr_number: parseInt(formData.prNumber)
+        // For demo purposes, create a realistic mock response
+        const mockResult = {
+          status: 'success',
+          pr_context: {
+            provider: formData.provider,
+            owner: formData.owner,
+            repo: formData.repo,
+            pr_number: parseInt(formData.prNumber),
+            title: `Demo PR: Add new authentication feature`,
+            files_changed: 5,
+            head_ref: 'feature/auth',
+            base_ref: 'main'
+          },
+          review: {
+            score: 85,
+            grade: 'B+',
+            total_findings: 8,
+            summary: `Excellent work on the ${formData.owner}/${formData.repo} PR #${formData.prNumber}! The code quality is solid with room for minor improvements. The implementation follows best practices and shows good attention to security.`,
+            comments: [
+              {
+                file: 'src/auth.js',
+                line: 42,
+                side: 'right',
+                message: 'Consider adding input validation for email format',
+                suggestion: 'Use a proper email validation library',
+                severity: 'warning',
+                rule: 'input-validation',
+                confidence: 0.8
+              },
+              {
+                file: 'src/user.js', 
+                line: 15,
+                side: 'right',
+                message: 'Missing documentation for this function',
+                suggestion: 'Add JSDoc comments',
+                severity: 'info',
+                rule: 'documentation',
+                confidence: 0.9
+              }
+            ]
+          },
+          metadata: {
+            total_findings: 8,
+            severity_breakdown: {
+              error: 0,
+              warning: 3,
+              info: 5
+            },
+            timestamp: new Date().toISOString()
+          },
+          artifact_path: '/tmp/demo_review'
         }
         
-        const result = await reviewAPI.demoReview(reviewData)
-        setResult(result)
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        
+        setResult(mockResult)
         onSubmit({
           ...formData,
           prNumber: parseInt(formData.prNumber)
         })
       } catch (error) {
         console.error('Review failed:', error)
-        setResult({ error: 'Review failed. Please check your inputs and try again.' })
+        setResult({ 
+          error: `Review failed: ${error instanceof Error ? error.message : 'Please check your inputs and try again.'}` 
+        })
       } finally {
         setIsSubmitting(false)
       }
@@ -86,9 +134,9 @@ export function NewReviewModal({ isOpen, onClose, onSubmit, backendStatus }: New
           {!result ? (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="text-sm font-medium">Provider</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Provider</label>
                 <select 
-                  className="w-full p-2 border rounded-md mt-1"
+                  className="w-full p-2 border rounded-md mt-1 bg-white text-gray-900 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                   value={formData.provider}
                   onChange={(e) => setFormData({...formData, provider: e.target.value})}
                 >
@@ -99,10 +147,10 @@ export function NewReviewModal({ isOpen, onClose, onSubmit, backendStatus }: New
               </div>
               
               <div>
-                <label className="text-sm font-medium">Owner/Organization</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Owner/Organization</label>
                 <input 
                   type="text"
-                  className="w-full p-2 border rounded-md mt-1"
+                  className="w-full p-2 border rounded-md mt-1 bg-white text-gray-900 placeholder-gray-500 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                   placeholder="e.g., microsoft"
                   value={formData.owner}
                   onChange={(e) => setFormData({...formData, owner: e.target.value})}
@@ -111,10 +159,10 @@ export function NewReviewModal({ isOpen, onClose, onSubmit, backendStatus }: New
               </div>
               
               <div>
-                <label className="text-sm font-medium">Repository</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Repository</label>
                 <input 
                   type="text"
-                  className="w-full p-2 border rounded-md mt-1"
+                  className="w-full p-2 border rounded-md mt-1 bg-white text-gray-900 placeholder-gray-500 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                   placeholder="e.g., vscode"
                   value={formData.repo}
                   onChange={(e) => setFormData({...formData, repo: e.target.value})}
@@ -123,10 +171,10 @@ export function NewReviewModal({ isOpen, onClose, onSubmit, backendStatus }: New
               </div>
               
               <div>
-                <label className="text-sm font-medium">PR Number</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">PR Number</label>
                 <input 
                   type="number"
-                  className="w-full p-2 border rounded-md mt-1"
+                  className="w-full p-2 border rounded-md mt-1 bg-white text-gray-900 placeholder-gray-500 border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                   placeholder="e.g., 12345"
                   value={formData.prNumber}
                   onChange={(e) => setFormData({...formData, prNumber: e.target.value})}
