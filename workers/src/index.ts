@@ -167,7 +167,7 @@ Evaluate based on:
 
 Be constructive, specific, and actionable. Return ONLY valid JSON.`;
 
-  const model = (env.GEMINI_MODEL || 'gemini-1.5-flash-latest').replace(/^models\//, '');
+  const model = (env.GEMINI_MODEL || 'gemini-flash-latest').replace(/^models\//, '');
   const apiVersion = env.GEMINI_API_VERSION || 'v1beta';
   const endpoint = `https://generativelanguage.googleapis.com/${apiVersion}/models/${model}:generateContent`;
     const payload = {
