@@ -123,7 +123,7 @@ async function analyzeWithGemini(
 ): Promise<ReviewResponse> {
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-001' });
 
     // Construct the prompt for code review
     const prompt = `You are an expert code reviewer. Analyze the following pull request and provide a detailed review.
