@@ -36,6 +36,28 @@ export function Dashboard() {
           AI-powered code reviews for your pull requests • Powered by Google Gemini
         </p>
       </div>
+
+      {/* Definition */}
+      <Card className="border border-blue-200 bg-gradient-to-br from-blue-50/80 via-white to-purple-50/60">
+        <CardHeader>
+          <CardTitle>What does the PR Review Agent do?</CardTitle>
+          <CardDescription>
+            It inspects any GitHub pull request by fetching the diff, running it through Google Gemini, and returning a human-friendly report with scores, findings, and suggested fixes. Think of it as your always-on senior reviewer who never gets tired.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-3 md:grid-cols-3">
+          {[
+            'Understands context from titles, descriptions, and the diff itself',
+            'Scores quality across security, performance, testing, and documentation',
+            'Surfaces actionable remediation notes you can paste directly into review comments',
+          ].map((item) => (
+            <div key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
+              <span className="mt-1 inline-block h-2 w-2 rounded-full bg-blue-500" aria-hidden />
+              <span>{item}</span>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
       
       {/* Quick Actions */}
       <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-purple-50">

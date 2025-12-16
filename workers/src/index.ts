@@ -12,6 +12,7 @@ interface Env {
   GEMINI_API_KEY: string;
   GEMINI_MODEL?: string;
   GEMINI_API_VERSION?: string;
+  GEMINI_FALLBACK_MODELS?: string;
   GITHUB_TOKEN?: string; // Server-side GitHub token for rate limit fallback
   ENVIRONMENT?: string;
   API_VERSION?: string;
@@ -167,9 +168,21 @@ Evaluate based on:
 
 Be constructive, specific, and actionable. Return ONLY valid JSON.`;
 
-    const sanitizeModel = (name: string) => (name || '').replace(/^models\//, '');
+    const sanitizeModel = (name: string) => (name || '').replace(/^models\//, '').trim();
     const apiVersion = env.GEMINI_API_VERSION || 'v1beta';
     const preferredModel = sanitizeModel(env.GEMINI_MODEL || 'gemini-flash-latest');
+    const configuredFallbacks = (env.GEMINI_FALLBACK_MODELS || '')
+      .split(',')
+      .map(sanitizeModel)
+      .filter(Boolean);
+    const fallbackDefaults = [
+      'gemini-flash-latest',
+      'gemini-2.5-flash',
+      'gemini-2.0-flash',
+      'gemini-flash-lite-latest',
+      'gemini-pro-latest', // keep pro last to avoid extra spend unless necessary
+    ];
+    const fallbackPreferenceList = configuredFallbacks.length ? configuredFallbacks : fallbackDefaults;
 
     const listAvailableModels = async (): Promise<string[]> => {
       try {
@@ -224,17 +237,8 @@ Be constructive, specific, and actionable. Return ONLY valid JSON.`;
     };
 
     const fallbackPreferences = Array.from(
-      new Set(
-        [
-          preferredModel,
-          'gemini-flash-latest',
-          'gemini-pro-latest',
-          'gemini-2.5-flash',
-          'gemini-2.5-pro',
-          'gemini-2.0-flash',
-        ].filter(Boolean)
-      )
-    );
+      new Set([preferredModel, ...fallbackPreferenceList])
+    ).filter(Boolean);
 
     const pickFallbackModel = async (): Promise<string | null> => {
       const available = await listAvailableModels();
