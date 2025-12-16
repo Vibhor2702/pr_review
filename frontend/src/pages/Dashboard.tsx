@@ -28,20 +28,20 @@ export function Dashboard() {
   return (
     <div className="space-y-10">
       {/* Hero & Definition */}
-      <div className="relative overflow-hidden rounded-3xl border border-blue-200 bg-gradient-to-r from-blue-50 via-white to-purple-50">
-        <div className="absolute -left-10 -top-10 h-40 w-40 rounded-full bg-blue-200/50 blur-3xl" aria-hidden />
-        <div className="absolute -bottom-12 -right-12 h-48 w-48 rounded-full bg-purple-200/40 blur-3xl" aria-hidden />
-        <div className="relative grid gap-8 p-8 lg:grid-cols-[3fr,2fr]">
+      <div className="relative overflow-hidden rounded-3xl border border-blue-900/40 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 shadow-[0_20px_60px_rgba(3,7,18,0.6)]">
+        <div className="absolute -left-10 -top-10 h-40 w-40 rounded-full bg-blue-600/30 blur-3xl" aria-hidden />
+        <div className="absolute -bottom-12 -right-12 h-48 w-48 rounded-full bg-purple-600/30 blur-3xl" aria-hidden />
+        <div className="relative grid gap-8 p-8 lg:grid-cols-[3fr,2fr] text-white">
           <div className="space-y-5">
             <div className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-blue-700">
               <Sparkles className="h-4 w-4" />
               Meet your AI reviewer
             </div>
             <div>
-              <h1 className="text-4xl font-bold tracking-tight text-slate-900">
+              <h1 className="text-4xl font-bold tracking-tight text-white">
                 PR Review Agent
               </h1>
-              <p className="mt-2 text-lg text-slate-600">
+              <p className="mt-2 text-lg text-blue-100/90">
                 AI-powered code reviews for your pull requests • Powered by Google Gemini
               </p>
             </div>
@@ -52,21 +52,21 @@ export function Dashboard() {
                 'Returns copy-ready review comments so you can respond in seconds.',
                 'Keeps your repo private—analysis runs through your Cloudflare Worker proxy.',
               ].map((item) => (
-                <div key={item} className="flex items-start gap-2 rounded-xl bg-white/70 p-3 text-sm text-slate-600 shadow-sm">
-                  <span className="mt-1 inline-block h-2 w-2 rounded-full bg-blue-500" aria-hidden />
+                <div key={item} className="flex items-start gap-2 rounded-xl bg-white/10 p-3 text-sm text-blue-100 shadow-sm ring-1 ring-white/10">
+                  <span className="mt-1 inline-block h-2 w-2 rounded-full bg-blue-300" aria-hidden />
                   <span>{item}</span>
                 </div>
               ))}
             </div>
           </div>
-          <div className="flex flex-col gap-4 rounded-2xl bg-white/90 p-6 shadow-xl backdrop-blur">
+          <div className="flex flex-col gap-4 rounded-2xl bg-slate-900/60 p-6 shadow-inner backdrop-blur border border-white/10">
             <div>
-              <p className="text-sm font-semibold text-blue-700">What does the agent do?</p>
-              <p className="text-sm text-slate-600">
+              <p className="text-sm font-semibold text-blue-200">What does the agent do?</p>
+              <p className="text-sm text-blue-100/80">
                 It fetches the GitHub PR metadata, streams the diff through Gemini, and packages the findings into a clean scorecard for your team.
               </p>
             </div>
-            <ul className="space-y-2 text-sm text-slate-600">
+            <ul className="space-y-2 text-sm text-blue-100/90">
               <li>• Highlights blockers before humans review.</li>
               <li>• Suggests safer patterns and tests to add.</li>
               <li>• Works 24/7 with consistent standards.</li>
@@ -74,12 +74,12 @@ export function Dashboard() {
             <Button 
               onClick={() => setIsReviewModalOpen(true)}
               size="lg"
-              className="text-lg"
+              className="text-lg bg-blue-500 hover:bg-blue-400 text-white"
             >
               <GitPullRequest className="mr-2 h-5 w-5" />
               Start New Review
             </Button>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-blue-200/80">
               Analyze any GitHub PR in ~8 seconds. No credentials are stored—tokens stay in your browser session.
             </p>
           </div>
