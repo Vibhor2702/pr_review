@@ -26,61 +26,65 @@ export function Dashboard() {
   }, []);
   
   return (
-    <div className="space-y-8">
-      {/* Hero Section */}
-      <div className="space-y-2">
-        <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          PR Review Agent
-        </h1>
-        <p className="text-lg text-muted-foreground">
-          AI-powered code reviews for your pull requests • Powered by Google Gemini
-        </p>
-      </div>
-
-      {/* Definition */}
-      <Card className="border border-blue-200 bg-gradient-to-br from-blue-50/80 via-white to-purple-50/60">
-        <CardHeader>
-          <CardTitle>What does the PR Review Agent do?</CardTitle>
-          <CardDescription>
-            It inspects any GitHub pull request by fetching the diff, running it through Google Gemini, and returning a human-friendly report with scores, findings, and suggested fixes. Think of it as your always-on senior reviewer who never gets tired.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-3 md:grid-cols-3">
-          {[
-            'Understands context from titles, descriptions, and the diff itself',
-            'Scores quality across security, performance, testing, and documentation',
-            'Surfaces actionable remediation notes you can paste directly into review comments',
-          ].map((item) => (
-            <div key={item} className="flex items-start gap-2 text-sm text-muted-foreground">
-              <span className="mt-1 inline-block h-2 w-2 rounded-full bg-blue-500" aria-hidden />
-              <span>{item}</span>
+    <div className="space-y-10">
+      {/* Hero & Definition */}
+      <div className="relative overflow-hidden rounded-3xl border border-blue-200 bg-gradient-to-r from-blue-50 via-white to-purple-50">
+        <div className="absolute -left-10 -top-10 h-40 w-40 rounded-full bg-blue-200/50 blur-3xl" aria-hidden />
+        <div className="absolute -bottom-12 -right-12 h-48 w-48 rounded-full bg-purple-200/40 blur-3xl" aria-hidden />
+        <div className="relative grid gap-8 p-8 lg:grid-cols-[3fr,2fr]">
+          <div className="space-y-5">
+            <div className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-blue-700">
+              <Sparkles className="h-4 w-4" />
+              Meet your AI reviewer
             </div>
-          ))}
-        </CardContent>
-      </Card>
-      
-      {/* Quick Actions */}
-      <Card className="border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-purple-50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-blue-600" />
-            Quick Actions
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <Button 
-            onClick={() => setIsReviewModalOpen(true)} 
-            size="lg"
-            className="w-full text-lg py-6"
-          >
-            <GitPullRequest className="mr-2 h-5 w-5" />
-            Start New Review
-          </Button>
-          <p className="text-sm text-muted-foreground text-center">
-            Analyze any GitHub PR with AI in seconds
-          </p>
-        </CardContent>
-      </Card>
+            <div>
+              <h1 className="text-4xl font-bold tracking-tight text-slate-900">
+                PR Review Agent
+              </h1>
+              <p className="mt-2 text-lg text-slate-600">
+                AI-powered code reviews for your pull requests • Powered by Google Gemini
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {[
+                'Understands the PR title, description, and entire diff before giving feedback.',
+                'Scores quality across security, performance, testing, and documentation pillars.',
+                'Returns copy-ready review comments so you can respond in seconds.',
+                'Keeps your repo private—analysis runs through your Cloudflare Worker proxy.',
+              ].map((item) => (
+                <div key={item} className="flex items-start gap-2 rounded-xl bg-white/70 p-3 text-sm text-slate-600 shadow-sm">
+                  <span className="mt-1 inline-block h-2 w-2 rounded-full bg-blue-500" aria-hidden />
+                  <span>{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-col gap-4 rounded-2xl bg-white/90 p-6 shadow-xl backdrop-blur">
+            <div>
+              <p className="text-sm font-semibold text-blue-700">What does the agent do?</p>
+              <p className="text-sm text-slate-600">
+                It fetches the GitHub PR metadata, streams the diff through Gemini, and packages the findings into a clean scorecard for your team.
+              </p>
+            </div>
+            <ul className="space-y-2 text-sm text-slate-600">
+              <li>• Highlights blockers before humans review.</li>
+              <li>• Suggests safer patterns and tests to add.</li>
+              <li>• Works 24/7 with consistent standards.</li>
+            </ul>
+            <Button 
+              onClick={() => setIsReviewModalOpen(true)}
+              size="lg"
+              className="text-lg"
+            >
+              <GitPullRequest className="mr-2 h-5 w-5" />
+              Start New Review
+            </Button>
+            <p className="text-xs text-slate-500">
+              Analyze any GitHub PR in ~8 seconds. No credentials are stored—tokens stay in your browser session.
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Features Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
