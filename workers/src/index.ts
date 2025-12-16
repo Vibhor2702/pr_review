@@ -123,7 +123,7 @@ async function analyzeWithGemini(
 ): Promise<ReviewResponse> {
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
 
     // Construct the prompt for code review
     const prompt = `You are an expert code reviewer. Analyze the following pull request and provide a detailed review.
@@ -206,30 +206,11 @@ Be constructive, specific, and actionable. Return ONLY valid JSON.`;
     };
   } catch (error) {
     console.error('Gemini API error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Gemini error details:', errorMessage);
     
-    // Return fallback response on error
-    return {
-      score: 70,
-      grade: 'C+',
-      summary: 'Automated review unavailable. Please review manually.',
-      suggestions: [
-        'Ensure code follows project conventions',
-        'Add appropriate test coverage',
-        'Update documentation as needed',
-      ],
-      severity_breakdown: {
-        critical: 0,
-        high: 0,
-        medium: 0,
-        low: 0,
-      },
-      metadata: {
-        timestamp: new Date().toISOString(),
-        repo: request.repo,
-        author: request.author,
-        lines_changed: 0,
-      },
-    };
+    // Throw error instead of returning fallback - let caller handle it
+    throw new Error(`AI review failed: ${errorMessage}`);
   }
 }
 
@@ -344,8 +325,14 @@ async function handleReview(request: Request, env: Env): Promise<Response> {
       );
     }
 
+    // Log request details
+    console.log(`Review request: ${body.repo} by ${body.author}, diff size: ${body.diff.length} chars`);
+    
     // Perform AI review
     const reviewResult = await analyzeWithGemini(body, env.GEMINI_API_KEY);
+    
+    // Log successful review
+    console.log(`Review completed: score=${reviewResult.score}, grade=${reviewResult.grade}`);
 
     return new Response(JSON.stringify(reviewResult, null, 2), {
       status: 200,
