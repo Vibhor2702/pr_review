@@ -7,8 +7,6 @@
  * - POST /api/review - AI-powered code review
  */
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
 // Environment type definition
 interface Env {
   GEMINI_API_KEY: string;
@@ -122,9 +120,6 @@ async function analyzeWithGemini(
   apiKey: string
 ): Promise<ReviewResponse> {
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-001' });
-
     // Construct the prompt for code review
     const prompt = `You are an expert code reviewer. Analyze the following pull request and provide a detailed review.
 
@@ -165,10 +160,36 @@ Evaluate based on:
 
 Be constructive, specific, and actionable. Return ONLY valid JSON.`;
 
-    // Call Gemini API
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const text = response.text();
+    const endpoint = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent';
+    const payload = {
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: prompt }],
+        },
+      ],
+    };
+
+    const aiResponse = await fetch(`${endpoint}?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!aiResponse.ok) {
+      const errorBody = await aiResponse.text();
+      throw new Error(`Gemini API request failed (${aiResponse.status}): ${errorBody}`);
+    }
+
+    const aiData = await aiResponse.json();
+    const text = aiData?.candidates?.[0]?.content?.parts
+      ?.map((part: { text: string }) => part.text)
+      .join('\n')
+      .trim();
+
+    if (!text) {
+      throw new Error('Gemini API returned no content');
+    }
 
     // Parse JSON from response (handle markdown code blocks)
     let jsonText = text.trim();
