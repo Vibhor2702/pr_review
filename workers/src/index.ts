@@ -167,51 +167,115 @@ Evaluate based on:
 
 Be constructive, specific, and actionable. Return ONLY valid JSON.`;
 
-  const model = (env.GEMINI_MODEL || 'gemini-flash-latest').replace(/^models\//, '');
-  const apiVersion = env.GEMINI_API_VERSION || 'v1beta';
-  const endpoint = `https://generativelanguage.googleapis.com/${apiVersion}/models/${model}:generateContent`;
-    const payload = {
-      contents: [
-        {
-          role: 'user',
-          parts: [{ text: prompt }],
-        },
-      ],
+    const sanitizeModel = (name: string) => (name || '').replace(/^models\//, '');
+    const apiVersion = env.GEMINI_API_VERSION || 'v1beta';
+    const preferredModel = sanitizeModel(env.GEMINI_MODEL || 'gemini-flash-latest');
+
+    const listAvailableModels = async (): Promise<string[]> => {
+      try {
+        const listResponse = await fetch(
+          `https://generativelanguage.googleapis.com/${apiVersion}/models?key=${apiKey}`
+        );
+        const listJson = await listResponse.json();
+        const names = listJson?.models?.map((m: { name: string }) => m.name) || [];
+        console.warn('Available Gemini models:', names);
+        return names.map(sanitizeModel);
+      } catch (listError) {
+        console.error('Failed to list Gemini models:', listError);
+        return [];
+      }
     };
 
-    const aiResponse = await fetch(`${endpoint}?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+    const runInference = async (modelName: string) => {
+      const endpoint = `https://generativelanguage.googleapis.com/${apiVersion}/models/${modelName}:generateContent`;
+      const payload = {
+        contents: [
+          {
+            role: 'user',
+            parts: [{ text: prompt }],
+          },
+        ],
+      };
 
-    if (!aiResponse.ok) {
-      const errorBody = await aiResponse.text();
-      // If model not found, log available models for easier debugging
-      if (aiResponse.status === 404) {
-        try {
-          const listResponse = await fetch(`https://generativelanguage.googleapis.com/${apiVersion}/models?key=${apiKey}`);
-          const listJson = await listResponse.json();
-          console.warn('Available Gemini models:', listJson?.models?.map((m: { name: string }) => m.name));
-        } catch (listError) {
-          console.error('Failed to list Gemini models:', listError);
+      const aiResponse = await fetch(`${endpoint}?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!aiResponse.ok) {
+        const errorBody = await aiResponse.text();
+        const errorObj = new Error(`Gemini API request failed (${aiResponse.status}): ${errorBody}`);
+        (errorObj as Error & { status?: number }).status = aiResponse.status;
+        throw errorObj;
+      }
+
+      const aiData = await aiResponse.json();
+      const text = aiData?.candidates?.[0]?.content?.parts
+        ?.map((part: { text: string }) => part.text)
+        .join('\n')
+        .trim();
+
+      if (!text) {
+        throw new Error('Gemini API returned no content');
+      }
+
+      return { text, usedModel: modelName };
+    };
+
+    const fallbackPreferences = Array.from(
+      new Set(
+        [
+          preferredModel,
+          'gemini-flash-latest',
+          'gemini-pro-latest',
+          'gemini-2.5-flash',
+          'gemini-2.5-pro',
+          'gemini-2.0-flash',
+        ].filter(Boolean)
+      )
+    );
+
+    const pickFallbackModel = async (): Promise<string | null> => {
+      const available = await listAvailableModels();
+      if (!available.length) return null;
+
+      for (const candidate of fallbackPreferences) {
+        if (candidate && available.includes(candidate) && candidate !== preferredModel) {
+          return candidate;
         }
       }
-      throw new Error(`Gemini API request failed (${aiResponse.status}): ${errorBody}`);
-    }
 
-    const aiData = await aiResponse.json();
-    const text = aiData?.candidates?.[0]?.content?.parts
-      ?.map((part: { text: string }) => part.text)
-      .join('\n')
-      .trim();
+      // As a last resort, pick the first available model different from the preferred one
+      const fallback = available.find((name) => name !== preferredModel);
+      return fallback || null;
+    };
 
-    if (!text) {
-      throw new Error('Gemini API returned no content');
+    let reviewText: string;
+    let modelUsed = preferredModel;
+
+    try {
+      const result = await runInference(preferredModel);
+      reviewText = result.text;
+      modelUsed = result.usedModel;
+    } catch (primaryError) {
+      if ((primaryError as { status?: number }).status === 404) {
+        const fallbackModel = await pickFallbackModel();
+        if (fallbackModel) {
+          console.warn(`Gemini fallback triggered: ${preferredModel} -> ${fallbackModel}`);
+          const fallbackResult = await runInference(fallbackModel);
+          reviewText = fallbackResult.text;
+          modelUsed = fallbackResult.usedModel;
+        } else {
+          throw primaryError;
+        }
+      } else {
+        throw primaryError;
+      }
     }
 
     // Parse JSON from response (handle markdown code blocks)
-    let jsonText = text.trim();
+    let jsonText = reviewText.trim();
     if (jsonText.startsWith('```json')) {
       jsonText = jsonText.replace(/```json\n?/, '').replace(/\n?```$/, '');
     } else if (jsonText.startsWith('```')) {
@@ -242,6 +306,7 @@ Be constructive, specific, and actionable. Return ONLY valid JSON.`;
         repo: request.repo,
         author: request.author,
         lines_changed: linesChanged,
+        model_used: modelUsed,
       },
     };
   } catch (error) {
