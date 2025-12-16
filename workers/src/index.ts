@@ -10,6 +10,8 @@
 // Environment type definition
 interface Env {
   GEMINI_API_KEY: string;
+  GEMINI_MODEL?: string;
+  GEMINI_API_VERSION?: string;
   GITHUB_TOKEN?: string; // Server-side GitHub token for rate limit fallback
   ENVIRONMENT?: string;
   API_VERSION?: string;
@@ -117,9 +119,14 @@ function handleStatus(request: Request, env: Env): Response {
  */
 async function analyzeWithGemini(
   request: ReviewRequest,
-  apiKey: string
+  env: Env
 ): Promise<ReviewResponse> {
   try {
+    const apiKey = env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error('Gemini API key not configured');
+    }
+
     // Construct the prompt for code review
     const prompt = `You are an expert code reviewer. Analyze the following pull request and provide a detailed review.
 
@@ -160,7 +167,9 @@ Evaluate based on:
 
 Be constructive, specific, and actionable. Return ONLY valid JSON.`;
 
-    const endpoint = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent';
+  const model = (env.GEMINI_MODEL || 'gemini-1.5-flash-latest').replace(/^models\//, '');
+  const apiVersion = env.GEMINI_API_VERSION || 'v1beta';
+  const endpoint = `https://generativelanguage.googleapis.com/${apiVersion}/models/${model}:generateContent`;
     const payload = {
       contents: [
         {
@@ -178,6 +187,16 @@ Be constructive, specific, and actionable. Return ONLY valid JSON.`;
 
     if (!aiResponse.ok) {
       const errorBody = await aiResponse.text();
+      // If model not found, log available models for easier debugging
+      if (aiResponse.status === 404) {
+        try {
+          const listResponse = await fetch(`https://generativelanguage.googleapis.com/${apiVersion}/models?key=${apiKey}`);
+          const listJson = await listResponse.json();
+          console.warn('Available Gemini models:', listJson?.models?.map((m: { name: string }) => m.name));
+        } catch (listError) {
+          console.error('Failed to list Gemini models:', listError);
+        }
+      }
       throw new Error(`Gemini API request failed (${aiResponse.status}): ${errorBody}`);
     }
 
@@ -350,7 +369,7 @@ async function handleReview(request: Request, env: Env): Promise<Response> {
     console.log(`Review request: ${body.repo} by ${body.author}, diff size: ${body.diff.length} chars`);
     
     // Perform AI review
-    const reviewResult = await analyzeWithGemini(body, env.GEMINI_API_KEY);
+    const reviewResult = await analyzeWithGemini(body, env);
     
     // Log successful review
     console.log(`Review completed: score=${reviewResult.score}, grade=${reviewResult.grade}`);
