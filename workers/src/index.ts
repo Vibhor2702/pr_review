@@ -12,6 +12,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 // Environment type definition
 interface Env {
   GEMINI_API_KEY: string;
+  GITHUB_TOKEN?: string; // Server-side GitHub token for rate limit fallback
   ENVIRONMENT?: string;
   API_VERSION?: string;
   ALLOWED_ORIGINS?: string;
@@ -233,6 +234,83 @@ Be constructive, specific, and actionable. Return ONLY valid JSON.`;
 }
 
 /**
+ * Proxy GitHub API requests to avoid CORS issues
+ */
+async function handleGitHubProxy(request: Request, env: Env): Promise<Response> {
+  const origin = request.headers.get('Origin') || '';
+  const allowedOrigins = env.ALLOWED_ORIGINS || 'https://pr-review.pages.dev';
+  const headers = getCorsHeaders(origin, allowedOrigins);
+
+  try {
+    const url = new URL(request.url);
+    const githubPath = url.searchParams.get('path');
+    
+    if (!githubPath) {
+      return new Response(
+        JSON.stringify({ error: 'Missing path parameter' }),
+        { status: 400, headers }
+      );
+    }
+
+    // Get Accept header from request (for diff format)
+    const acceptHeader = request.headers.get('Accept') || 'application/vnd.github.v3+json';
+    
+    // Get Authorization header from request (user-provided GitHub token)
+    const authHeader = request.headers.get('Authorization');
+    
+    // Build headers for GitHub API
+    const githubHeaders: HeadersInit = {
+      'Accept': acceptHeader,
+      'User-Agent': 'PR-Review-Agent-Cloudflare-Worker',
+    };
+    
+    // Priority: Use user token if provided, otherwise fall back to server token
+    if (authHeader) {
+      // User provided their own token - use it
+      githubHeaders['Authorization'] = authHeader;
+    } else if (env.GITHUB_TOKEN) {
+      // Fall back to server-side token for better rate limits
+      githubHeaders['Authorization'] = `token ${env.GITHUB_TOKEN}`;
+    }
+    // If neither exists, request will be unauthenticated (60 req/hour limit)
+    
+    // Fetch from GitHub API
+    const githubResponse = await fetch(`https://api.github.com${githubPath}`, {
+      headers: githubHeaders,
+    });
+
+    // Check if response is JSON or plain text (diff)
+    const contentType = githubResponse.headers.get('Content-Type') || '';
+    
+    let responseData;
+    let responseHeaders = new Headers(headers);
+    
+    if (contentType.includes('application/json')) {
+      responseData = JSON.stringify(await githubResponse.json());
+      responseHeaders.set('Content-Type', 'application/json');
+    } else {
+      // Plain text response (like diff)
+      responseData = await githubResponse.text();
+      responseHeaders.set('Content-Type', 'text/plain');
+    }
+    
+    return new Response(responseData, {
+      status: githubResponse.status,
+      headers: responseHeaders,
+    });
+  } catch (error) {
+    console.error('GitHub proxy error:', error);
+    return new Response(
+      JSON.stringify({ 
+        error: 'Failed to fetch from GitHub',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      }),
+      { status: 500, headers }
+    );
+  }
+}
+
+/**
  * Handle review request
  */
 async function handleReview(request: Request, env: Env): Promise<Response> {
@@ -308,6 +386,10 @@ export default {
 
     if (path === '/api/review' && request.method === 'POST') {
       return handleReview(request, env);
+    }
+
+    if (path === '/api/github-proxy' && request.method === 'GET') {
+      return handleGitHubProxy(request, env);
     }
 
     // 404 Not Found

@@ -22,10 +22,14 @@ ALLOWED_ORIGINS = "https://pr-review.pages.dev,https://*.pages.dev"
 # Secrets (set with: npx wrangler secret put SECRET_NAME)
 # Required secrets:
 # - GEMINI_API_KEY: Google Gemini API key for AI-powered reviews
+# - GITHUB_TOKEN: GitHub personal access token for higher rate limits (optional but recommended)
 #
 # To set secrets, run:
 #   npx wrangler secret put GEMINI_API_KEY
-#   (paste your API key when prompted)
+#   npx wrangler secret put GITHUB_TOKEN
+#   (paste your API key/token when prompted)
+#
+# SECURITY: Secrets are encrypted and never exposed in code or logs
 
 # Routes (optional - if using custom domain)
 # [[routes]]
