@@ -187,13 +187,11 @@ export interface ConfigResponse {
 }
 
 /**
- * Unified API client with automatic backend detection
- * Supports both Railway (Flask) and Cloudflare Workers backends
+ * Unified API client for Cloudflare Workers backend
  */
 export const reviewAPI = {
   /**
    * Review a pull request
-   * Maps to Workers format if using Cloudflare, or Flask format for Railway
    */
   reviewPR: async (request: PRReviewRequest): Promise<PRReviewResponse> => {
     // Check if using Workers backend
@@ -251,18 +249,56 @@ export const reviewAPI = {
         },
       }
     } else {
-      // Use Flask backend (Railway)
-      const response = await fetch(`${API_BASE_URL}/review_pr`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(request),
-      })
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
+      // Use Workers backend (default)
+      const workersRequest: WorkersReviewRequest = {
+        diff: `Mock diff for ${request.owner}/${request.repo}#${request.pr_number}`,
+        repo: `${request.owner}/${request.repo}`,
+        author: request.owner,
+        pr_number: request.pr_number,
+        title: `PR #${request.pr_number}`,
       }
       
-      return await response.json()
+      const workersResponse = await workersAPI.reviewCode(workersRequest)
+      
+      // Transform back to legacy format
+      return {
+        status: 'success',
+        pr_context: {
+          provider: request.provider,
+          owner: request.owner,
+          repo: request.repo,
+          pr_number: request.pr_number,
+          title: workersRequest.title || `PR #${request.pr_number}`,
+          files_changed: 0,
+        },
+        review: {
+          score: workersResponse.score,
+          grade: workersResponse.grade,
+          total_findings: workersResponse.suggestions.length,
+          summary: workersResponse.summary,
+          comments: workersResponse.suggestions.map((suggestion, idx) => ({
+            file: 'unknown',
+            line: idx + 1,
+            side: 'right' as const,
+            message: suggestion,
+            severity: workersResponse.severity_breakdown.critical > 0 
+              ? 'error' 
+              : workersResponse.severity_breakdown.high > 0 
+              ? 'warning' 
+              : 'info',
+            rule: 'ai-suggestion',
+          })),
+        },
+        metadata: {
+          total_findings: workersResponse.suggestions.length,
+          severity_breakdown: {
+            error: workersResponse.severity_breakdown.critical,
+            warning: workersResponse.severity_breakdown.high + workersResponse.severity_breakdown.medium,
+            info: workersResponse.severity_breakdown.low,
+          },
+          timestamp: workersResponse.metadata.timestamp,
+        },
+      }
     }
   },
 
@@ -332,8 +368,7 @@ export const checkAPIHealth = async (): Promise<boolean> => {
   }
 }
 
-export const getAPIType = (): 'workers' | 'railway' | 'local' => {
+export const getAPIType = (): 'workers' | 'local' => {
   if (API_BASE_URL.includes('workers.dev')) return 'workers'
-  if (API_BASE_URL.includes('railway.app')) return 'railway'
   return 'local'
 }
